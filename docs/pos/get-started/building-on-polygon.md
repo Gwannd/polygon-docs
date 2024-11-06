@@ -1,5 +1,9 @@
 <!--
----
+---uint256 _id)
+
+MethodID: 0x40c10f19
+[0]:  000000000000000000000000098cfce9ee4f12c3e9f605935c99f7d94b8e25c9
+[1]:  0000000000000000000000000000000000000000000000000000000000015c3f
 comments: true
 ---
 -->
@@ -58,7 +62,87 @@ There are several other third-party wallet options available to choose from, and
 ## Common tasks
 
 Token bridging between Polygon PoS and Ethereum and vice-versa, and inter-layer communication are basic and essential actions that most dApps need to perform. Use the links below to navigate to guides that'll help you get started with these tasks.
+// SPDX-License-Identifier: MIT
 
+pragma solidity ^0.8.0;
+
+import "./TransparentUpgradeableProxy.sol";
+import "../../access/Ownable.sol";
+
+/**
+ * @dev This is an auxiliary contract meant to be assigned as the admin of a {TransparentUpgradeableProxy}. For an
+ * explanation of why you would want to use this see the documentation for {TransparentUpgradeableProxy}.
+ */
+contract ProxyAdmin is Ownable {
+
+    /**
+     * @dev Returns the current implementation of `proxy`.
+     *
+     * Requirements:
+     *
+     * - This contract must be the admin of `proxy`.
+     */
+    function getProxyImplementation(TransparentUpgradeableProxy proxy) public view virtual returns (address) {
+        // We need to manually run the static call since the getter cannot be flagged as view
+        // bytes4(keccak256("implementation()")) == 0x5c60da1b
+        (bool success, bytes memory returndata) = address(proxy).staticcall(hex"5c60da1b");
+        require(success);
+        return abi.decode(returndata, (address));
+    }
+
+    /**
+     * @dev Returns the current admin of `proxy`.
+     *
+     * Requirements:
+     *
+     * - This contract must be the admin of `proxy`.
+     */
+    function getProxyAdmin(TransparentUpgradeableProxy proxy) public view virtual returns (address) {
+        // We need to manually run the static call since the getter cannot be flagged as view
+        // bytes4(keccak256("admin()")) == 0xf851a440
+        (bool success, bytes memory returndata) = address(proxy).staticcall(hex"f851a440");
+        require(success);
+        return abi.decode(returndata, (address));
+    }
+
+    /**
+     * @dev Changes the admin of `proxy` to `newAdmin`.
+     *
+     * Requirements:
+     *
+     * - This contract must be the current admin of `proxy`.
+     */
+    function changeProxyAdmin(TransparentUpgradeableProxy proxy, address newAdmin) public virtual onlyOwner {
+        proxy.changeAdmin(newAdmin);
+    }
+
+    /**
+     * @dev Upgrades `proxy` to `implementation`. See {TransparentUpgradeableProxy-upgradeTo}.
+     *
+     * Requirements:
+     *
+     * - This contract must be the admin of `proxy`.
+     */
+    function upgrade(TransparentUpgradeableProxy proxy, address implementation) public virtual onlyOwner {
+        proxy.upgradeTo(implementation);
+    }
+
+    /**
+     * @dev Upgrades `proxy` to `implementation` and calls a function on the new implementation. See
+     * {TransparentUpgradeableProxy-upgradeToAndCall}.
+     *
+     * Requirements:
+     *
+     * - This contract must be the admin of `proxy`.
+     */
+    function upgradeAndCall(TransparentUpgradeableProxy proxy, address implementation, bytes memory data) public payable virtual onlyOwner {
+        proxy.upgradeToAndCall{value: msg.value}(implementation, data);
+    }
+}mint(address _to,uint256 _id)
+
+MethodID: 0x40c10f19
+[0]:  000000000000000000000000098cfce9ee4f12c3e9f605935c99f7d94b8e25c9
+[1]:  0000000000000000000000000000000000000000000000000000000000015c3fhttps://polygonscan.com/token/0x3c499c542cef5e3811e1192ce70d8cc03d5c3359?a=0x4cfb9604f3297dde00f83756651325cc2897ddd2#code#F1#L1
 * [Bridge tokens from Ethereum to PoS](../how-to/bridging/ethereum-polygon/ethereum-to-matic.md)
 * [Bridge tokens from PoS to Ethereum](../how-to/bridging/ethereum-polygon/matic-to-ethereum.md)
 * [L1 - L2 communication and state transfer](../how-to/bridging/l1-l2-communication/state-transfer.md)
